@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, Suspense } from 'react';
+import { Switch, Redirect } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import Preloader from './components/Preloader/Preloader';
+import Modal from './components/Modal/Modal';
+import { authOperations } from './redux/auth/';
+import routesData from './routes';
+import AppBar from './components/AppBar/AppBar';
+import PrivateRoute from './components/PrivateRoute';
+import PublicRoute from './components/PublicRoute';
 
-function App() {
+export default function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(authOperations.getCurrentUser());
+  }, [dispatch]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <AppBar />
+      <Suspense
+        fallback={
+          <Modal>
+            <Preloader />
+          </Modal>
+        }
+      >
+        <Switch>
+          {routesData.routes.map(route =>
+            route.private ? (
+              <PrivateRoute key={route.name} {...route} />
+            ) : (
+              <PublicRoute key={route.name} {...route} />
+            ),
+          )}
+          <Redirect to={routesData.pathes.homePage} />
+        </Switch>
+      </Suspense>
+    </>
   );
 }
-
-export default App;
